@@ -104,7 +104,7 @@ We welcome contributions to improve these tutorials! Whether it's fixing bugs, i
 
 ## 📝 License
 
-This tutorial series is provided for educational and development purposes. Please refer to ZTF's official licensing terms for production usage.
+This tutorial series is provided for educational and development purposes.
 
 ---
 
