@@ -1,7 +1,7 @@
 # Use official Node image for build
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package.json tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY public ./public
 COPY src ./src
 RUN npm install -g react-scripts && npm install

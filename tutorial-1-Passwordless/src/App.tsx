@@ -76,8 +76,8 @@ const App: React.FC = () => {
       checkLoginIframeInterval: 0,
       messageReceiveTimeout: 10000,
       flow: "standard",
-      // Disable nonce validation to fix the "Invalid nonce" error
-      useNonce: false
+      // Enable nonce validation for better security
+      useNonce: true
     })
       .then(auth => {
         console.log('Keycloak init result:', auth);
