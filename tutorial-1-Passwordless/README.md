@@ -5,6 +5,7 @@ This tutorial demonstrates how to integrate ZTF (Zero Trust Fabric) Keycloak aut
 ## Overview
 
 This application demonstrates:
+
 - Passwordless authentication using Keycloak
 - JWT token management and automatic refresh
 - Secure logout functionality
@@ -21,13 +22,14 @@ This application demonstrates:
 ## Keycloak Configuration
 
 ### Server Details
+
 - **Keycloak URL**: `https://auth.solvewithvia.com/auth`
 - **Realm**: `ztf_demo`
 - **Client ID**: `localhost-app` (pre-configured for local development)
 
 ### Client Configuration in Keycloak
 
-The `localhost-app` client is pre-configured for development. 
+The `localhost-app` client is pre-configured for development.
 
 ## Installation & Setup
 
@@ -35,7 +37,7 @@ The `localhost-app` client is pre-configured for development.
 
 All dependencies are automatically installed during the Docker build process. The project uses these essential packages (as defined in `package.json`):
 
-- `keycloak-js`: ^23.0.1 - Keycloak JavaScript adapter
+- `keycloak-js`: ^25.0.6 - Keycloak JavaScript adapter
 - `react`: ^18.2.0 - React framework  
 - `react-dom`: ^18.2.0 - React DOM renderer
 - `http-proxy-middleware`: ^2.0.6 - Development CORS proxy
@@ -67,7 +69,7 @@ const keycloak = new Keycloak({
 #### 1. Keycloak Initialization (`src/App.tsx:68-81`)
 
 ```typescript
-keycloak.init({ 
+keycloak.init({
   onLoad: "login-required",
   redirectUri: window.location.origin + "/",
   checkLoginIframe: false,
@@ -78,14 +80,15 @@ keycloak.init({
   checkLoginIframeInterval: 0,
   messageReceiveTimeout: 10000,
   flow: "standard",
-  useNonce: false
-})
+  useNonce: true,
+});
 ```
 
 **Key Configuration Options:**
+
 - `onLoad: "login-required"` - Automatically redirect to login if not authenticated
 - `pkceMethod: "S256"` - Use PKCE for secure authentication
-- `useNonce: false` - Disabled to prevent nonce validation issues
+- `useNonce: true` - Enabled for better security with nonce validation
 - `checkLoginIframe: false` - Disabled for better compatibility with modern browsers that block cross-origin iframe communication and CSP restrictions
 
 #### 2. Token Management (`src/App.tsx:41-58`)
@@ -94,15 +97,18 @@ The application includes automatic token refresh:
 
 ```typescript
 const setupTokenRefresh = () => {
-  keycloak.updateToken(70).then((refreshed) => {
-    if (refreshed) {
-      console.log('Token refreshed');
-    }
-    setCurrentToken(keycloak.token);
-    setLastTokenUpdate(new Date());
-  }).catch((error) => {
-    keycloak.login(); // Redirect to login if refresh fails
-  });
+  keycloak
+    .updateToken(70)
+    .then((refreshed) => {
+      if (refreshed) {
+        console.log("Token refreshed");
+      }
+      setCurrentToken(keycloak.token);
+      setLastTokenUpdate(new Date());
+    })
+    .catch((error) => {
+      keycloak.login(); // Redirect to login if refresh fails
+    });
 };
 ```
 
@@ -113,7 +119,7 @@ const handleLogout = () => {
   setCurrentToken(undefined);
   setAuthenticated(false);
   keycloak.logout({
-    redirectUri: window.location.origin + "/"
+    redirectUri: window.location.origin + "/",
   });
 };
 ```
@@ -160,9 +166,12 @@ The `src/setupProxy.js` file configures CORS headers for development:
 
 ```javascript
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin,X-Requested-With,Content-Type,Accept,Authorization"
+  );
   // Handle preflight requests
 });
 ```
@@ -193,22 +202,26 @@ add_header 'Access-Control-Allow-Credentials' 'true' always;
 ## Authentication Flow
 
 ### 1. Initial Load
+
 1. Application initializes Keycloak client
 2. Checks for existing authentication state
 3. If not authenticated, redirects to Keycloak login page
 
 ### 2. Login Process
+
 1. User is redirected to ZTF Keycloak login page
 2. User authenticates (passwordless flow)
 3. Keycloak redirects back with authorization code
 4. Application exchanges code for JWT using PKCE
 
 ### 3. Token Management
+
 1. Application stores JWT
 2. Automatically refreshes tokens every 5 minutes if they expire within 350 seconds
 3. Displays current token information and user details
 
 ### 4. Logout Process
+
 1. Clears local token state
 2. Redirects to Keycloak logout endpoint
 3. Keycloak performs global logout and redirects back to application
@@ -236,23 +249,23 @@ To make authenticated API calls, include the JWT token in the Authorization head
 ```typescript
 const makeAuthenticatedRequest = async () => {
   try {
-    const response = await fetch('/api/protected-endpoint', {
-      method: 'GET',
+    const response = await fetch("/api/protected-endpoint", {
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${keycloak.token}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${keycloak.token}`,
+        "Content-Type": "application/json",
       },
     });
-    
+
     if (response.status === 401) {
       // Token might be expired, try to refresh
       await keycloak.updateToken(30);
       // Retry the request with new token
     }
-    
+
     return response.json();
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error("API request failed:", error);
   }
 };
 ```
@@ -262,16 +275,19 @@ const makeAuthenticatedRequest = async () => {
 The application includes comprehensive error handling:
 
 ### 1. Initialization Errors
+
 - Network connectivity issues
 - Invalid client configuration
 - Keycloak server unavailability
 
 ### 2. Authentication Errors
+
 - Invalid credentials
 - Expired sessions
 - Token exchange failures
 
 ### 3. Token Refresh Errors
+
 - Network failures during refresh
 - Invalid refresh tokens
 - Server-side token revocation
@@ -280,10 +296,11 @@ The application includes comprehensive error handling:
 
 ### Common Issues
 
-1. **"Invalid nonce" errors**: Ensure `useNonce: false` in Keycloak initialization
+1. **"Invalid nonce" errors**: If you encounter nonce validation errors, ensure your keycloak-js version matches your Keycloak deployment version. Current configuration uses `useNonce: true` with Keycloak 25.0.6
 2. **CORS errors**: Check that your domain is added to Keycloak client's Web Origins
 3. **Redirect URI mismatch**: Verify Valid Redirect URIs in Keycloak client configuration
 4. **Token refresh failures**: Check network connectivity and Keycloak server status
+
 
 ### Debug Mode
 
@@ -300,6 +317,7 @@ Enable detailed logging by setting `enableLogging: true` in Keycloak initializat
 ## Support
 
 For issues related to:
+
 - **ZTF Keycloak configuration**: Contact ZTF support team
 - **Application integration**: Refer to Keycloak.js documentation
 - **This tutorial**: Create an issue in the project repository

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ztf-tutorial-1:
     build:
@@ -11,9 +9,3 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
-    networks:
-      - ztf-network
-
-networks:
-  ztf-network:
-    driver: bridge
