@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
-import Keycloak from "keycloak-js";
-
-const keycloak = new Keycloak({
-  url: "https://auth.solvewithvia.com/auth",
-  realm: "ztf_demo",
-  clientId: "localhost-app",
-});
+import React, { useEffect, useState, useCallback } from "react";
+import { keycloak } from "./keycloak";
 
 const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -56,6 +50,27 @@ const App: React.FC = () => {
       keycloak.login();
     });
   };
+
+
+  // The purpose of creating this specific URL is to serve as a signal. When the pop-up
+  // window is opened with this new URL (e.g., http://localhost:3000/?popup=true), the
+  // React code in that pop-up can check for the popup=true parameter. As you can see
+  // in the Main component in the Canvas, this check determines whether to show the 
+  // main application or the special <PopupHandler /> component, which is designed to 
+  // immediately start the login process.
+  const handleLogin = useCallback(() => {
+        const loginUrl = `${window.location.href}?popup=true`;
+        const popup = window.open(loginUrl, 'keycloak-login', 'width=800,height=600');
+
+        const timer = setInterval(() => {
+            if (!popup || popup.closed) {
+                clearInterval(timer);
+                // Reload the main window to reflect the new login state.
+                // The init() method will run again on page load and detect the session.
+                window.location.reload();
+            }
+        }, 500);
+    }, []);
 
   useEffect(() => {
     console.log('Redirect URI:', window.location.origin + "/");
@@ -169,15 +184,22 @@ const App: React.FC = () => {
   }
 
   return (
-    <div>
-      <h1>Hello World! You are authenticated.</h1>
-      <p>Token: {getTokenDisplay(currentToken)}</p>
-      <p>User: {keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.name || "Unknown"}</p>
-      <p>Subject ID: {keycloak.tokenParsed?.sub}</p>
-      <p>Last token update: {lastTokenUpdate ? lastTokenUpdate.toLocaleTimeString() : "Never"}</p>
-      <button onClick={handleLogout} style={{ padding: '10px 20px', marginTop: '10px' }}>
-        Logout
-      </button>
+    <div className="container">
+        {authenticated ? (
+            <div>
+                <h1>Welcome, {keycloak.tokenParsed?.preferred_username || 'User'}!</h1>
+                <p>You have successfully logged in. You can now see this protected content.</p>
+                <button onClick={handleLogout} className="logout">Log Out</button>
+                <h3>Your Access Token Info:</h3>
+                <pre>{JSON.stringify(keycloak.tokenParsed, null, 2)}</pre>
+            </div>
+        ) : (
+            <div>
+                <h1>Welcome to the Public Landing Page</h1>
+                <p>This page is open to everyone. To access your personalized dashboard and settings, please log in.</p>
+                <button onClick={handleLogin}>Log In via Pop-up</button>
+            </div>
+        )}
     </div>
   );
 };
