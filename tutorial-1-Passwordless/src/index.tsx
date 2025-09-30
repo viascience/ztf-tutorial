@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import keycloak from "./App";
+import { keycloak } from "./keycloak"; // Make sure you have a keycloak.ts exporting the Keycloak instance
+
 
 const styles = `
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; text-align: center; }
@@ -24,6 +25,14 @@ const root = ReactDOM.createRoot(document.getElementById("root")!);
    */
   function PopupHandler() {
       useEffect(() => {
+          /**
+           * Popup login flow
+           * The onLoad: 'login-required' option tells the Keycloak adapter that
+           *  authentication is mandatory. When the PopupHandler component loads in 
+           * the pop-up window and this code runs, the adapter checks if the user is 
+           * logged in. Since they are not, this option forces an immediate and
+           * automatic redirect of the pop-up window to the Keycloak login page.
+           */
           keycloak.init({ onLoad: 'login-required' }).then(() => {
               window.close();
           }).catch((error: any) => {

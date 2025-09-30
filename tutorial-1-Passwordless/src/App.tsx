@@ -1,11 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import Keycloak from "keycloak-js";
-
-const keycloak = new Keycloak({
-  url: "https://auth.solvewithvia.com/auth",
-  realm: "ztf_demo",
-  clientId: "localhost-app",
-});
+import { keycloak } from "./keycloak";
 
 const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -57,6 +51,13 @@ const App: React.FC = () => {
     });
   };
 
+
+  // The purpose of creating this specific URL is to serve as a signal. When the pop-up
+  // window is opened with this new URL (e.g., http://localhost:3000/?popup=true), the
+  // React code in that pop-up can check for the popup=true parameter. As you can see
+  // in the Main component in the Canvas, this check determines whether to show the 
+  // main application or the special <PopupHandler /> component, which is designed to 
+  // immediately start the login process.
   const handleLogin = useCallback(() => {
         const loginUrl = `${window.location.href}?popup=true`;
         const popup = window.open(loginUrl, 'keycloak-login', 'width=800,height=600');
@@ -64,12 +65,9 @@ const App: React.FC = () => {
         const timer = setInterval(() => {
             if (!popup || popup.closed) {
                 clearInterval(timer);
-                keycloak.checkSso().then(() => {
-                    setAuthenticated(keycloak.authenticated);
-                }).catch(() => {
-                    console.log("SSO check failed after popup close.");
-                    setAuthenticated(false);
-                });
+                // Reload the main window to reflect the new login state.
+                // The init() method will run again on page load and detect the session.
+                window.location.reload();
             }
         }, 500);
     }, []);
