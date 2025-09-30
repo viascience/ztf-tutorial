@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Keycloak from "keycloak-js";
 
 const keycloak = new Keycloak({
@@ -56,6 +56,23 @@ const App: React.FC = () => {
       keycloak.login();
     });
   };
+
+  const handleLogin = useCallback(() => {
+        const loginUrl = `${window.location.href}?popup=true`;
+        const popup = window.open(loginUrl, 'keycloak-login', 'width=800,height=600');
+
+        const timer = setInterval(() => {
+            if (!popup || popup.closed) {
+                clearInterval(timer);
+                keycloak.checkSso().then(() => {
+                    setAuthenticated(keycloak.authenticated);
+                }).catch(() => {
+                    console.log("SSO check failed after popup close.");
+                    setAuthenticated(false);
+                });
+            }
+        }, 500);
+    }, []);
 
   useEffect(() => {
     console.log('Redirect URI:', window.location.origin + "/");
@@ -169,15 +186,22 @@ const App: React.FC = () => {
   }
 
   return (
-    <div>
-      <h1>Hello World! You are authenticated.</h1>
-      <p>Token: {getTokenDisplay(currentToken)}</p>
-      <p>User: {keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.name || "Unknown"}</p>
-      <p>Subject ID: {keycloak.tokenParsed?.sub}</p>
-      <p>Last token update: {lastTokenUpdate ? lastTokenUpdate.toLocaleTimeString() : "Never"}</p>
-      <button onClick={handleLogout} style={{ padding: '10px 20px', marginTop: '10px' }}>
-        Logout
-      </button>
+    <div className="container">
+        {authenticated ? (
+            <div>
+                <h1>Welcome, {keycloak.tokenParsed?.preferred_username || 'User'}!</h1>
+                <p>You have successfully logged in. You can now see this protected content.</p>
+                <button onClick={handleLogout} className="logout">Log Out</button>
+                <h3>Your Access Token Info:</h3>
+                <pre>{JSON.stringify(keycloak.tokenParsed, null, 2)}</pre>
+            </div>
+        ) : (
+            <div>
+                <h1>Welcome to the Public Landing Page</h1>
+                <p>This page is open to everyone. To access your personalized dashboard and settings, please log in.</p>
+                <button onClick={handleLogin}>Log In via Pop-up</button>
+            </div>
+        )}
     </div>
   );
 };
