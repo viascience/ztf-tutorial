@@ -327,7 +327,6 @@ docker run -p 3000:3000 --env-file .env.local ztf-security-todo
 ✅ **PKCE flow** - No client secrets  
 ✅ **Row Level Security** - Supabase RLS policies  
 ✅ **Complete logout** - Clears app, session, and Keycloak SSO  
-✅ **Session monitoring** - Detects wallet-initiated logouts  
 ✅ **HTTPS in production** - Secure transport  
 ✅ **Token refresh** - Automatic before expiry
 
