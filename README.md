@@ -2,6 +2,9 @@
 
 Welcome to the comprehensive tutorial series for **ZTF (Zero Trust Fabric)** - a cutting-edge security solution that revolutionizes enterprise authentication and access control through decentralized identity management.
 
+Want to test out ZTF for yourself? 💡 Try it live: [Demo Environment](https://demo.ztf.solvewithvia.com/)
+
+
 ## What is ZTF?
 
 **Zero Trust Fabric (ZTF)** is an advanced security framework built on the principle of "never trust, always verify." It provides a decentralized authentication infrastructure that moves beyond traditional perimeter-based security models to protect against modern cybersecurity threats.
@@ -19,7 +22,7 @@ ZTF enables developers to implement military-grade security solutions with advan
 
 ## 📚 Available Tutorials
 
-### Tutorial 1: Passwordless Authentication with Keycloak 🚀
+### Passwordless Authentication with Keycloak 🚀
 
 **Status:** ✅ **Available Now**
 
@@ -39,11 +42,11 @@ Learn how to integrate ZTF's passwordless authentication system with Keycloak in
 
 ---
 
-### Tutorial 2: Web3 & WalletConnect Integration 🔥
+### Coming Soon! Web3 & WalletConnect Integration 🔥
 
-**Status:** 🚧 **Coming Soon - Get Ready for Web3 Revolution!**
+**Status:** 🚧 **Coming Soon**
 
-Get ready for the most exciting tutorial in the series! Learn how to integrate ZTF's advanced Web3 capabilities with WalletConnect v2 for seamless blockchain interactions.
+Learn how to integrate ZTF's advanced Web3 capabilities with WalletConnect v2 for seamless blockchain interactions.
 
 **What's coming:**
 - 🔗 **WalletConnect Session Recovery** - Persistent wallet connections using Keycloak tokens
