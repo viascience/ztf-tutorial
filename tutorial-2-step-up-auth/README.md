@@ -1,13 +1,15 @@
-# ZTF WalletConnect Integration Tutorial
+# VIA Step Up Authentication Tutorial
 
-This tutorial demonstrates how to integrate WalletConnect session recovery from Keycloak authentication and transaction sending to the ZTF wallet in a React application. This example shows a complete Web3 flow using WalletConnect v2 with automatic configuration and session management through Keycloak.
+This tutorial demonstrates how to integrate step up authentication in your applications by leveraging WalletConnect session recovery from Keycloak authentication and transaction sending to the VIA wallet in a React application. This example shows a complete Web3 flow using WalletConnect v2 with automatic configuration and session management through Keycloak.
+
+If you are wondering why this tutorial is relevant to you, if you want to protect your users' sensitive actions from automated agents, this tutorial will help you create your apps with the necessary security requirements. In particular, we will be protecting our users by requesting step up authentication from their VIA wallet for sensitive actions.
 
 ## Overview
 
 This application demonstrates:
 - **Automatic WalletConnect Configuration**: WalletConnect settings are automatically retrieved from the Keycloak user info endpoint - no manual configuration needed
 - **Seamless Session Recovery**: WalletConnect sessions are automatically restored from user profile data
-- **ZTF Wallet Integration**: Direct integration with ZTF wallet infrastructure
+- **VIA Wallet Integration**: Direct integration with VIA wallet infrastructure
 - **Transaction Management**: Create and sign transactions through WalletConnect
 - **Persistent Authentication**: Session state management across browser refreshes
 - **Security-First Data Storage**: Sensitive data automatically clears when browser session ends
@@ -16,7 +18,7 @@ This application demonstrates:
 ## Prerequisites
 
 - **Docker**: Required for running the containerized application
-- **ZTF Account**: Access to a ZTF Keycloak instance with proper wallet configuration
+- [**ZTF documentation**](https://www.solvewithvia.com/via-ztf/): To learn more about Zero Trust Fabric. 
 - **Basic Knowledge**: Understanding of React, Web3, and WalletConnect concepts
 
 ## How It Works
@@ -256,7 +258,7 @@ This approach balances user experience with security by keeping public informati
 1. **User Action**: User fills transaction form in the demo
 2. **Validation**: App validates transaction parameters
 3. **WalletConnect Request**: Sends transaction to connected wallet
-4. **User Approval**: User approves transaction in ZTF wallet
+4. **User Approval**: User approves transaction in VIA wallet
 5. **Blockchain Submission**: Transaction is submitted to the network
 6. **Result Display**: Transaction hash and status shown in UI
 
@@ -278,7 +280,7 @@ This tutorial's signature-based approach becomes critical in agentic browser env
 
 **How This Tutorial Protects Users**:
 1. **Wallet-Level Confirmation**: Every sensitive action requires explicit wallet signature approval
-2. **User Awareness**: The ZTF wallet shows exactly what the user is signing
+2. **User Awareness**: The VIA wallet shows exactly what the user is signing
 3. **Cannot Be Automated**: Agentic browsers cannot access private keys or auto-approve wallet signatures
 
 **Production Implementation Benefits**:
@@ -292,7 +294,7 @@ Agentic Browser → Fills form → Submits to backend
                                      ↓
 Backend → Generates unique action ID → Returns to frontend
                                      ↓
-Frontend → Prompts ZTF wallet → User sees "Sign action: withdraw_funds_xyz123"
+Frontend → Prompts VIA wallet → User sees "Sign action: withdraw_funds_xyz123"
                                      ↓
 User → Explicitly approves/rejects → Only then does backend process the action
 ```
@@ -322,7 +324,7 @@ docker build --no-cache -t ztf-tutorial-2 .
 
 #### 3. WalletConnect Issues
 - **No Configuration Found**: Ensure your ZTF account has WalletConnect settings configured
-- **Connection Timeout**: Check ZTF wallet availability and network connectivity
+- **Connection Timeout**: Check VIA wallet availability and network connectivity
 
 #### 4. Transaction Problems
 - **Transaction Rejected**: Verify wallet has sufficient balance and gas
@@ -406,6 +408,8 @@ For technical issues, questions, or bug reports, please create an issue in the [
 - [Keycloak JavaScript Adapter](https://www.keycloak.org/docs/latest/securing_apps/#_javascript_adapter)
 - [Docker Documentation](https://docs.docker.com/)
 - [Ethereum Development](https://ethereum.org/developers/)
+- [ZTF Documentation](https://www.solvewithvia.com/via-ztf/)
+
 
 ### Next Steps
 After running this tutorial successfully, you are all set to be able to modify the transaction demo for your specific use case.
