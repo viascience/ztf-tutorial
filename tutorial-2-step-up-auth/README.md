@@ -224,7 +224,7 @@ Once running, the application provides:
 The application automatically retrieves from your ZTF profile:
 
 - **WalletConnect Project ID**: Extracted from user profile
-- **Session Information**: Previous WalletConnect sessions
+- **Session Information**: Walletconnect session created during login
 - **User Preferences**: Network settings and wallet configuration
 - **Public Keys**: Associated wallet addresses
 - **Organization Data**: Company and user type information
