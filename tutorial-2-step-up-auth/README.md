@@ -54,6 +54,16 @@ docker build -t ztf-tutorial-2 .
 docker run -p 80:80 ztf-tutorial-2
 ```
 
+Or by running the justfile:
+
+```
+# Start 
+just up-detached
+
+#Stop
+just down
+```
+
 The application will be available at `http://localhost`
 
 ### Method 2: Docker Compose
