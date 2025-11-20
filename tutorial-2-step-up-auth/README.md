@@ -20,6 +20,7 @@ This application demonstrates:
 - **Docker**: Required for running the containerized application
 - [**ZTF documentation**](https://www.solvewithvia.com/via-ztf/): To learn more about Zero Trust Fabric. 
 - **Basic Knowledge**: Understanding of React, Web3, and WalletConnect concepts
+- VIA Knowledge Hub Post: [**"Five steps to secure your app against rogue AI agents"**](https://www.viaknowledgehub.com/p/five-steps-to-secure-your-app-against)
 
 ## How It Works
 
