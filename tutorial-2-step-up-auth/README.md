@@ -419,6 +419,7 @@ For technical issues, questions, or bug reports, please create an issue in the [
 - [Docker Documentation](https://docs.docker.com/)
 - [Ethereum Development](https://ethereum.org/developers/)
 - [ZTF Documentation](https://www.solvewithvia.com/via-ztf/)
+- [VIA Knowledge Hub Post "Five steps to secure your app against rogue AI agents"](https://www.viaknowledgehub.com/p/five-steps-to-secure-your-app-against)
 
 
 ### Next Steps
