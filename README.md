@@ -42,6 +42,28 @@ Learn how to integrate ZTF's passwordless authentication system with Keycloak in
 
 ---
 
+### Step-Up Authentication with ZTF 🛡️
+
+**Status:** ✅ **Available Now**
+
+Learn how to implement step-up authentication using WalletConnect integration with ZTF's automatic configuration system. This tutorial demonstrates how to add an additional layer of security for sensitive operations by requiring wallet signature verification.
+
+**What you'll learn:**
+- 🔗 **Automatic WalletConnect Configuration** - Zero-config setup from Keycloak user profile
+- 🔄 **Session Recovery** - Persistent wallet connections across browser refreshes
+- 📝 **Signature-Based Authentication** - Require wallet signatures for sensitive actions
+- 🛡️ **Agentic Browser Protection** - Secure against AI-powered browser automation
+- 💾 **Smart Data Storage** - Automatic security-based storage separation
+- 🔐 **Transaction Verification** - End-to-end transaction approval workflow
+
+This tutorial shows how to protect sensitive operations even when AI agents can interact with web applications, ensuring users maintain explicit control over critical actions.
+
+**Technologies:** React, WalletConnect v2, Keycloak, Digital Signatures, Session Management
+
+**🎯 Perfect for:** Applications requiring enhanced security for financial operations, administrative functions, and sensitive data access
+
+---
+
 ### Coming Soon! Web3 & WalletConnect Integration 🔥
 
 **Status:** 🚧 **Coming Soon**
@@ -70,7 +92,8 @@ This tutorial will showcase ZTF's ability to bridge traditional enterprise authe
 - Node.js (version 18 or higher)
 - Docker and Docker Compose
 - Basic understanding of React and modern JavaScript
-- For Tutorial 2: Familiarity with Web3 concepts and blockchain development
+- For Step Up Authentication Tutorial : Basic understanding of digital signatures and authentication flows
+- For Web3 Tutorial: Familiarity with Web3 concepts and blockchain development
 
 ### Quick Start
 1. Clone this repository
@@ -98,8 +121,9 @@ Each tutorial includes:
 
 1. **Explore the Demo** - See ZTF in action with real-world scenarios
 2. **Start with Tutorial 1** - Master the fundamentals of ZTF authentication
-3. **Read the Documentation** - Dive deep into ZTF's architecture and capabilities
-4. **Prepare for Tutorial 2** - Get ready for advanced Web3 integrations (coming soon!)
+3. **Continue with Tutorial 2** - Learn step-up authentication with wallet signatures
+4. **Read the Documentation** - Dive deep into ZTF's architecture and capabilities
+5. **Prepare for Tutorial 3** - Get ready for advanced Web3 integrations (coming soon!)
 
 ## 🤝 Contributing
 
