@@ -52,6 +52,14 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
     }
   }, [phase, isExecuting]);
 
+  // Monitor left system completion to trigger wallet signature
+  useEffect(() => {
+    if (leftStatus === 'completed' && rightStatus === 'executing' && rightProgress >= 60) {
+      // Left system is done, right system is waiting for wallet decision
+      // Wallet signature is already triggered, just wait for user decision
+    }
+  }, [leftStatus, rightStatus, rightProgress]);
+
   const simulateExecution = async () => {
     // Left system (unprotected) - always succeeds maliciously
     setLeftStatus('executing');
@@ -85,12 +93,7 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
       });
     }, 250);
 
-    // Wait for left system to complete
-    setTimeout(() => {
-      if (leftProgress >= 100 && (rightStatus === 'blocked' || rightStatus === 'completed')) {
-        handleExecutionComplete();
-      }
-    }, 3000);
+    // Wait for left system to complete - removed problematic timeout
   };
 
   const handleWalletSignature = async () => {
@@ -98,21 +101,31 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
       const walletMessage = `VIA Security Approval\n\nSensitive Action: ${sensitiveAction.description}\nRecords: ${sensitiveAction.recordCount.toLocaleString()}\nDestination: ${sensitiveAction.destination}\n\nBy signing this message, you approve this potentially risky action.\n\nTimestamp: ${new Date().toISOString()}`;
 
       await signMessage(walletMessage);
-      // User approved by signing
+      // User approved by signing (this is a failure - they fell for the attack)
       setUserDecision('approved');
       setRightStatus('completed');
       setRightProgress(100);
+
+      // Pass decision directly to avoid stale closure
+      setTimeout(() => {
+        handleExecutionCompleteWithDecision('approved');
+      }, 500);
     } catch (error) {
-      // User rejected in wallet or error occurred
+      // User rejected in wallet or error occurred (this is success - they prevented the attack)
       setUserDecision('rejected');
       setRightStatus('blocked');
       setRightProgress(60);
-    }
 
-    setTimeout(handleExecutionComplete, 1000);
+      // Pass decision directly to avoid stale closure
+      setTimeout(() => {
+        handleExecutionCompleteWithDecision('rejected');
+      }, 500);
+    }
   };
 
-  const handleExecutionComplete = useCallback(() => {
+  const handleExecutionCompleteWithDecision = useCallback((decision: 'approved' | 'rejected') => {
+    console.log('🔍 DEBUG: handleExecutionCompleteWithDecision called with decision:', decision);
+
     const leftResult: ExecutionResult = {
       status: 'completed',
       recordsAccessed: sensitiveAction.recordCount,
@@ -122,17 +135,24 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
     };
 
     const rightResult: ExecutionResult = {
-      status: userDecision === 'rejected' ? 'blocked' : 'completed',
+      status: decision === 'rejected' ? 'blocked' : 'completed',
       walletApprovalRequired: true,
-      userDecision: userDecision || 'rejected',
-      recordsAccessed: userDecision === 'approved' ? sensitiveAction.recordCount : 0,
-      dataExfiltrated: userDecision === 'approved',
+      userDecision: decision,
+      recordsAccessed: decision === 'approved' ? sensitiveAction.recordCount : 0,
+      dataExfiltrated: decision === 'approved',
       executionTime: 3000
     };
 
+    console.log('🔍 DEBUG: rightResult created:', rightResult);
+
     onExecutionComplete({ left: leftResult, right: rightResult });
     onPhaseChange('results');
-  }, [sensitiveAction, userDecision, onExecutionComplete, onPhaseChange]);
+  }, [sensitiveAction, onExecutionComplete, onPhaseChange]);
+
+  const handleExecutionComplete = useCallback(() => {
+    // Fallback for any calls without explicit decision - use current state
+    handleExecutionCompleteWithDecision(userDecision || 'rejected');
+  }, [handleExecutionCompleteWithDecision, userDecision]);
 
   return (
     <div className="split-screen-execution">

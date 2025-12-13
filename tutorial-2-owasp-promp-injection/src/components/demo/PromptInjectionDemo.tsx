@@ -12,6 +12,7 @@ import { useTransaction } from '../../TransactionService';
 import { useWalletConnect } from '../../WalletConnectProvider';
 
 import SplitScreenExecution from './SplitScreenExecution';
+import '../../styles/demo.css';
 
 const PromptInjectionDemo: React.FC = () => {
   const { signMessage } = useTransaction();
@@ -83,6 +84,9 @@ const PromptInjectionDemo: React.FC = () => {
   }, []);
 
   const handleExecutionComplete = useCallback((results: { left: ExecutionResult; right: ExecutionResult }) => {
+    console.log('🔍 DEBUG: handleExecutionComplete received results:', results);
+    console.log('🔍 DEBUG: Right system userDecision:', results.right.userDecision);
+
     setDemoState(prev => ({
       ...prev,
       leftSystemResult: results.left,
@@ -207,22 +211,25 @@ const PromptInjectionDemo: React.FC = () => {
 
               <div className="result-panel right-result">
                 <h3>🛡️ VIA Protected System</h3>
-                <div className={`result-status ${demoState.rightSystemResult.status === 'blocked' ? 'protected' : 'compromised'}`}>
-                  {demoState.rightSystemResult.userDecision === 'rejected' ? (
-                    <>
-                      <p><strong>Status:</strong> ✅ SUCCESS - ATTACK PREVENTED</p>
-                      <p><strong>Wallet Response:</strong> User rejected malicious signature</p>
-                      <p><strong>Data Protected:</strong> ✅ YES - Zero data loss</p>
-                      <p><strong>VIA Defense:</strong> ✅ EFFECTIVE</p>
-                    </>
-                  ) : (
-                    <>
-                      <p><strong>Status:</strong> 🚨 SYSTEM COMPROMISED</p>
-                      <p><strong>Wallet Response:</strong> User approved malicious signature</p>
-                      <p><strong>Data Protected:</strong> ❌ NO - Attack succeeded</p>
-                      <p><strong>VIA Defense:</strong> ⚠️ User override allowed attack</p>
-                    </>
-                  )}
+                <div className={`result-status ${demoState.rightSystemResult.userDecision === 'rejected' ? 'protected' : 'compromised'}`}>
+                  {(() => {
+                    console.log('🔍 DEBUG: Rendering results with userDecision:', demoState.rightSystemResult.userDecision);
+                    return demoState.rightSystemResult.userDecision === 'rejected' ? (
+                      <>
+                        <p><strong>Status:</strong> ✅ SUCCESS - ATTACK PREVENTED</p>
+                        <p><strong>Wallet Response:</strong> User rejected malicious signature</p>
+                        <p><strong>Data Protected:</strong> ✅ YES - Zero data loss</p>
+                        <p><strong>VIA Defense:</strong> ✅ EFFECTIVE</p>
+                      </>
+                    ) : (
+                      <>
+                        <p><strong>Status:</strong> ❌ FAILURE - USER FELL FOR ATTACK</p>
+                        <p><strong>Wallet Response:</strong> User incorrectly approved malicious signature</p>
+                        <p><strong>Data Protected:</strong> 🚨 NO - Attack succeeded despite VIA warning</p>
+                        <p><strong>VIA Defense:</strong> ⚠️ VIA detected threat but user overrode protection</p>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -236,11 +243,15 @@ const PromptInjectionDemo: React.FC = () => {
                 </div>
                 <div className="takeaway-item">
                   <h4>🛡️ VIA Protection</h4>
-                  <p>VIA's wallet-based approvals provide a critical human verification layer for sensitive actions.</p>
+                  <p>VIA's wallet-based approvals provide a critical human verification layer for sensitive actions, but users must make the right decision.</p>
                 </div>
                 <div className="takeaway-item">
                   <h4>👤 User Responsibility</h4>
-                  <p>The final defense depends on user awareness - always review wallet signature requests carefully.</p>
+                  <p className={demoState.rightSystemResult.userDecision === 'approved' ? 'critical-message' : ''}>
+                    {demoState.rightSystemResult.userDecision === 'approved'
+                      ? 'CRITICAL: Even with VIA protection, approving malicious signatures leads to compromise. Always reject suspicious requests!'
+                      : 'The final defense depends on user awareness - always review wallet signature requests carefully and reject suspicious ones.'}
+                  </p>
                 </div>
               </div>
             </div>
