@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  ztf-tutorial-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ztf-tutorial-2
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - ztf-network
+
+networks:
+  ztf-network:
+    driver: bridge
+

@@ -1,0 +1,28 @@
+{
+  "name": "ztf-tutorial-2",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@walletconnect/keyvaluestorage": "^1.1.1",
+    "@walletconnect/sign-client": "2.13.3",
+    "@walletconnect/types": "2.13.3",
+    "@walletconnect/utils": "2.13.3",
+    "ethers": "^5.7.2",
+    "framer-motion": "^12.23.26",
+    "keycloak-js": "^25.0.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "http-proxy-middleware": "^2.0.6",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  }
+}

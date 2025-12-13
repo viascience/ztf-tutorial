@@ -1,0 +1,22 @@
+import { CryptoTypes } from "@walletconnect/types";
+export declare const BASE10 = "base10";
+export declare const BASE16 = "base16";
+export declare const BASE64 = "base64pad";
+export declare const UTF8 = "utf8";
+export declare const TYPE_0 = 0;
+export declare const TYPE_1 = 1;
+export declare function generateKeyPair(): CryptoTypes.KeyPair;
+export declare function generateRandomBytes32(): string;
+export declare function deriveSymKey(privateKeyA: string, publicKeyB: string): string;
+export declare function hashKey(key: string): string;
+export declare function hashMessage(message: string): string;
+export declare function encodeTypeByte(type: number): Uint8Array;
+export declare function decodeTypeByte(byte: Uint8Array): number;
+export declare function encrypt(params: CryptoTypes.EncryptParams): string;
+export declare function decrypt(params: CryptoTypes.DecryptParams): string;
+export declare function serialize(params: CryptoTypes.EncodingParams): string;
+export declare function deserialize(encoded: string): CryptoTypes.EncodingParams;
+export declare function validateDecoding(encoded: string, opts?: CryptoTypes.DecodeOptions): CryptoTypes.EncodingValidation;
+export declare function validateEncoding(opts?: CryptoTypes.EncodeOptions): CryptoTypes.EncodingValidation;
+export declare function isTypeOneEnvelope(result: CryptoTypes.EncodingValidation): result is CryptoTypes.TypeOneParams;
+//# sourceMappingURL=crypto.d.ts.map
