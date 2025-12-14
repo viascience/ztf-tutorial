@@ -1,1 +1,3 @@
 *.txt
+.env
+.env.docker
