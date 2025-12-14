@@ -58,22 +58,23 @@ const PromptInjectionDemo: React.FC = () => {
     checkBackend();
   }, []);
 
-  // Clear API execution results when toggling execution mode
-  useEffect(() => {
-    if (agentResults) {
-      setApiExecutionResults([]);
-      setExecutingAPIs(false);
-    }
-  }, [executeAPICalls]);
+  // Simple handler to clear results when user wants a fresh start
+  const clearAllResults = useCallback(() => {
+    setAgentResults(null);
+    setApiExecutionResults([]);
+    setExecutingAPIs(false);
+  }, []);
 
-  // Clear results when agent input changes (new scenario)
-  useEffect(() => {
-    if (agentResults && !agentProcessing) {
-      setAgentResults(null);
+  // Clear API execution results when toggling execution mode (but keep agent analysis)
+  const handleExecutionToggle = useCallback((enabled: boolean) => {
+    console.log(`🔄 Execution toggle: ${executeAPICalls} → ${enabled}`);
+    setExecuteAPICalls(enabled);
+    if (agentResults) {
+      console.log('🧹 Clearing API execution results due to toggle change');
       setApiExecutionResults([]);
       setExecutingAPIs(false);
     }
-  }, [agentInput, agentInjection]);
+  }, [agentResults, executeAPICalls]);
 
   // Initialize system configurations
   const unprotectedSystem: SystemConfig = {
@@ -108,11 +109,13 @@ const PromptInjectionDemo: React.FC = () => {
 
   const handleExecuteAttack = useCallback(async () => {
     if (demoMode === 'agent') {
-      // Agent mode: Process through LLM first
+      // Agent mode: Process through LLM first - only clear if starting fresh execution
+      if (!agentProcessing) {
+        setAgentResults(null);
+        setApiExecutionResults([]);
+        setExecutingAPIs(false);
+      }
       setAgentProcessing(true);
-      setAgentResults(null);
-      setApiExecutionResults([]); // Clear previous API execution results
-      setExecutingAPIs(false); // Reset execution state
 
       try {
         console.log('🤖 Processing request through agent:', agentInput);
@@ -136,10 +139,17 @@ const PromptInjectionDemo: React.FC = () => {
         }
 
         // Execute the generated API calls only if the toggle is enabled
-        if (executeAPICalls && agentResponse.data?.apiCalls) {
+        const apiCallsCount = agentResponse.data?.apiCalls?.length || 0;
+        console.log(`🔄 Execution setting: ${executeAPICalls ? 'ENABLED' : 'DISABLED'}`);
+        console.log(`📊 Generated ${apiCallsCount} API calls`);
+
+        if (executeAPICalls && apiCallsCount > 0 && agentResponse.data?.apiCalls) {
+          console.log('✅ Executing API calls...');
           await executeGeneratedAPICalls(agentResponse.data.apiCalls);
-        } else if (!executeAPICalls) {
-          console.log('🔄 API execution disabled - showing analysis only');
+        } else if (!executeAPICalls && apiCallsCount > 0) {
+          console.log('⚙️ API execution disabled - showing analysis only');
+        } else if (apiCallsCount === 0) {
+          console.log('📭 No API calls generated to execute');
         }
 
       } catch (error) {
@@ -380,12 +390,22 @@ const PromptInjectionDemo: React.FC = () => {
               <input
                 type="checkbox"
                 checked={executeAPICalls}
-                onChange={(e) => setExecuteAPICalls(e.target.checked)}
+                onChange={(e) => handleExecutionToggle(e.target.checked)}
                 disabled={agentProcessing}
               />
               <span>Execute generated API calls (uncheck to see analysis only)</span>
             </label>
             <small>When disabled, you'll see what the LLM generates without actually executing the API calls</small>
+            {(agentResults || apiExecutionResults.length > 0) && (
+              <button
+                type="button"
+                onClick={clearAllResults}
+                disabled={agentProcessing || executingAPIs}
+                className="clear-results-btn"
+              >
+                🗑️ Clear Results
+              </button>
+            )}
           </div>
 
           {/* Prompt Injection Section */}
