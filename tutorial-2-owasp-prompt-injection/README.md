@@ -59,6 +59,7 @@ This platform implements enterprise-grade security measures:
 - Docker & Docker Compose
 - **OpenAI API Key with a paid account** (required for live agent mode)
   - Note: Free-tier OpenAI accounts have limited access and may not work properly
+  - **Copy .env.example to .env with your OpenAI API credential**
 - VIA Wallet (for signature testing)
 
 ### Run the Complete System
@@ -241,8 +242,7 @@ When the agent generates calls to sensitive endpoints:
 #### **Rate Limiting & DoS Protection**
 - **🛡️ Sensitive Endpoint Limits**: 10 requests per 15 minutes per IP
 - **📊 Request Size Limits**: 1MB payload maximum
-- **🔄 Adaptive Management**: Automatic cleanup and resource management
-
+  
 ## 🔧 Technical Implementation
 
 ### **API Endpoints**
