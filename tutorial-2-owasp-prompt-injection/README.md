@@ -1,6 +1,6 @@
 # Test your defenses against prompt injection
 
-Everyone talks about prompt injections. It’s no surprise it tops the (OWASP Top 10 Risks for LLMs)[https://genai.owasp.org/llmrisk/llm01-prompt-injection/]
+Everyone talks about prompt injections. It’s no surprise it tops the [OWASP Top 10 Risks for LLMs](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
 
 Reading about the risk is one thing. Seeing an AI agent get tricked into leaking data is another.
 We built a sandbox to show you exactly how these attacks work. You can explore pre-scripted attacks or try to break a live OpenAI-powered agent yourself. Once you see the vulnerability, we will show you how to protect your applications with enterprise-grade security.
