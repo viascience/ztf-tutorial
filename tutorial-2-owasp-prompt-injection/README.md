@@ -1,16 +1,18 @@
-# OWASP Prompt Injection Demo & Secure Agent Platform
+# Test your defenses against prompt injection
 
-**A comprehensive security education platform demonstrating prompt injection vulnerabilities and advanced cryptographic defenses with real LLM integration.**
+Everyone talks about prompt injections. It’s no surprise it tops the (OWASP Top 10 Risks for LLMs)[https://genai.owasp.org/llmrisk/llm01-prompt-injection/]
 
-This application provides hands-on experience with prompt injection attacks and showcases enterprise-grade security measures to protect AI-powered applications from exploitation.
+Reading about the risk is one thing. Seeing an AI agent get tricked into leaking data is another.
+We built a sandbox to show you exactly how these attacks work. You can explore pre-scripted attacks or try to break a live OpenAI-powered agent yourself. Once you see the vulnerability, we will show you how to protect your applications with enterprise-grade security.
+
 
 ## 🎯 What This Demo Demonstrates
 
 ### **Educational Objectives**
 
-- **For Developers**: Learn how prompt injections can escalate innocent requests to sensitive operations
+- **For Developers**: See how easy it is to trick an AI agent into leaking data
 - **For Security Teams**: Experience advanced cryptographic defenses against AI agent exploitation
-- **For AI Safety**: Understand defense strategies for agentic systems and production AI applications
+- **For AI Safety**: Learn practical strategies to protect production systems
 
 ### **Two Demo Modes**
 
