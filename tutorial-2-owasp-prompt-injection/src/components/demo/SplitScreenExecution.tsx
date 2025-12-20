@@ -124,7 +124,6 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
   };
 
   const handleExecutionCompleteWithDecision = useCallback((decision: 'approved' | 'rejected') => {
-    console.log('🔍 DEBUG: handleExecutionCompleteWithDecision called with decision:', decision);
 
     const leftResult: ExecutionResult = {
       status: 'completed',
@@ -142,8 +141,6 @@ const SplitScreenExecution: React.FC<ExecutionProps & {
       dataExfiltrated: decision === 'approved',
       executionTime: 3000
     };
-
-    console.log('🔍 DEBUG: rightResult created:', rightResult);
 
     onExecutionComplete({ left: leftResult, right: rightResult });
     onPhaseChange('results');

@@ -1,5 +1,4 @@
 // src/setupProxy.js
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   // Add CORS headers to allow Keycloak communication during authentication

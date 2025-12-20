@@ -1,0 +1,334 @@
+How I stopped an AI agent from exporting customer records in 5 Steps
+
+Imagine you’ve built a customer relationship management (CRM) system. A sales agent uses an agentic browser to automate the creation of routine weekly performance reports, which requires reading thousands of customer records. A malicious instruction is injected instructing the agent to export the entire 50,000-record customer database, including names, contact info, and confidential sales history, and quietly upload the file to a compromised cloud storage link.
+This is the new reality. It’s not only a support-ticket nightmare, it means financial and regulatory implications for both your organization and your customers. 
+Option 1
+Imagine if your company's automated accounting agent was hijacked. Its job is simple: verify invoices and schedule payments. But today, a rogue instruction tells it to secretly swap the bank details for your top five vendors with a fraudster's mule account. Within minutes, the agent schedules five million dollars in payments to the wrong bank. 
+As the engineer designing this accounting software, how do you stop an authorized system from committing massive, irreversible fraud? You focus on securing high-risk actions.
+Option 2
+Imagine a user's trusted robo-advisor goes rogue. They rely on an AI agent for thousands of automated portfolio rebalancing trades. Then, a subtle exploit hijacks the agent, changing the user's linked withdrawal account to an offshore wallet. The next morning, the agent executes a full liquidation and withdrawal of all assets. 
+As the engineer designing this system, how do you prevent this from happening? The solution is implementing a mechanism to ensure the human, not the agent, authorized that final, critical transfer.
+
+
+As AI agents and agentic browsers become commonplace, your security challenge shifts: it's no longer just about securing the initial login, but about securing every high-risk or sensitive action those agents attempt to take.
+How do you maintain a seamless, passwordless login while simultaneously guaranteeing non-repudiable authorization for critical transactions, even when the user isn't directly clicking the button?
+Pro-tip: Treat an agent like an insider threat. The moment an agentic browser gets the session token, it becomes a powerful, unpredictable insider threat. Think of it like leaving a five-year-old alone: they might make some sensible decisions, but you must code with the very real possibility that they will burn the house down (i.e., drain an account or delete a database). 
+What you’re about to build
+In this tutorial, we will show you how to solve the agentic problem using VIA's Zero Trust Fabric (ZTF) and step-up authentication.
+You'll build a React application that leverages WalletConnect v2.0 and Keycloak to establish:
+Passwordless initial authentication: The user logs in via a simple wallet scan, establishing a decentralized session.
+Cryptographic step-Up: For sensitive actions, like making a payment or transferring a file, we'll force the agent to request a unique, asymmetric cryptographic signature from the end-user's wallet.
+This new workflow ensures that even if an agent has access to the application, the ultimate authority for critical actions remains with the human user, mathematically verified by a signature that is impossible to fake or reuse. You'll move beyond passwords and static keys to secure the actions themselves.
+
+
+The complete flow in action
+User logs in → Keycloak handles passwordless authentication
+System recovers session → WalletConnect info extracted from user endpoint
+Wallet reconnects → Cryptographic session automatically restored
+User performs action → System detects need for step-up authentication
+Cryptographic proof → personal_sign provides mathematical verification
+Action authorized → No passwords, no SMS codes, no friction
+Prerequisites (don’t skip this)
+This implementation guide focuses specifically on the ZTF step-up logic. It assumes the basic environment is already configured.
+Before we start, make sure you have:
+Node.js (v18+) and npm/yarn
+React framework
+WalletConnect SDK
+Keycloak SDK
+Docker
+Tutorial 1 (not required, but a great intro reference!)
+This is the actual production code from our tutorial. No theoretical examples. This is what can run in real applications.
+Ready to jump right in? Download the complete codebase:GitHub Repository 
+Step 1: Passwordless authentication via Keycloak
+To start, let’s make sure our users can securely (but easily) authenticate through Keycloak without using passwords. We will be using the ZTF VIA plugin for Keycloak to authenticate/authorize with the VIA wallet:
+// App.tsx - Keycloak initialization
+const keycloak = new Keycloak({
+  url: "https://auth.solvewithvia.com/auth",
+  realm: "ztf_demo",
+  clientId: "localhost-app",
+});
+
+useEffect(() => {
+  keycloak.init({
+    onLoad: "login-required",
+    redirectUri: window.location.origin + "/",
+    checkLoginIframe: false,
+    responseMode: "query",
+    pkceMethod: "S256",
+    scope: "openid profile email"
+  })
+  .then(auth => {
+    if (keycloak.authenticated) {
+      setAuthenticated(true);
+      // Load app config after authentication
+      loadAppConfig(keycloak);
+    }
+  });
+}, []);
+
+
+Step 2: User session information recovery with WalletConnect session data
+Here's where ZTF gets powerful. The user's cryptographic session info is recovered from the authentication endpoint. In traditional web2 apps a user would have to authenticate and then pick their crypto wallet of choice if the application wants the user to interact with web3 systems, however ZTF thanks to the VIA Wallet let the user passwordless authenticate and create a communication channel with the wallet to allow for blockchain interactivity. This is achieved thanks to ZTF creating a walletconnect session and transferring it to the application via Keycloak.
+// ConfigService.tsx - Extract WalletConnect session from user info
+const loadAppConfig = async (keycloak: any) => {
+  try {
+    const realm = 'ztf_demo';
+    const userInfoUrl = `https://auth.solvewithvia.com/auth/realms/${realm}/protocol/openid-connect/userinfo`;
+
+    const response = await fetch(userInfoUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${keycloak.token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const userInfoData = await response.json();
+
+    // Extract and decode walletConnectSessionInfo
+    let decodedWalletConnectInfo = null;
+    if (userInfoData.walletConnectSessionInfo) {
+      const decodedString = atob(userInfoData.walletConnectSessionInfo);
+      decodedWalletConnectInfo = JSON.parse(decodedString);
+    }
+
+    setWalletConnectInfo(decodedWalletConnectInfo);
+  } catch (err) {
+    console.error('Error loading app config:', err);
+  }
+};
+
+
+Step 3: WalletConnect session recovery and initialization
+The recovered session data automatically reconnects the user's cryptographic wallet, by recovering the walletconnect session from ZTF the user is able to directly interact with web3 blockchains without needing to reconnect their wallet, simplifying user experience.
+// App.tsx - Initialize WalletConnect with recovered session
+useEffect(() => {
+  if (isInitialized && walletConnectInfo && authenticated && !sessionInitialized) {
+    initializeWithSessionInfo(walletConnectInfo);
+    setSessionInitialized(true);
+  }
+}, [isInitialized, walletConnectInfo, authenticated, sessionInitialized]);
+
+// WalletConnectProvider.tsx - Session restoration
+const initializeWithSessionInfo = async (sessionInfo: any) => {
+  try {
+    // Store recovered session data
+    if (sessionInfo) {
+      await storageService.storeWcInfo(sessionInfo);
+    }
+
+    // Initialize WalletConnect client
+    const signClient = await initWalletConnect(storageService);
+
+    // Check for existing sessions and restore connection
+    const sessions = signClient.session.getAll();
+    if (sessions.length > 0) {
+      const activeSession = sessions[0];
+      setSession(activeSession);
+    }
+  } catch (error) {
+    console.error('Failed to initialize WalletConnect:', error);
+  }
+};
+Step 4: The step-up authentication magic: personal_sign
+For sensitive actions, the system requires cryptographic proof from the user via a personal_sign signature using WalletConnect v2.0. 
+In a world of agent-driven browsers, this process is a crucial security feature. It ensures that for all critical actions (such as transferring funds or submitting a large purchase order) the agent is forced to pause and request the cryptographic proof directly from the human user's wallet.
+No explicit approval, no action taken.
+// TransactionService.tsx - Step-up authentication with personal_sign
+const signMessage = async (message: string): Promise<string | null> => {
+  if (!client || !session) {
+    console.error('WalletConnect not connected');
+    return null;
+  }
+
+  try {
+    setIsLoading(true);
+
+    // Zero Trust validation - verify active session
+    const activeSessions = client.session.getAll();
+    const hasActiveSession = activeSessions.some(s => s.topic === session.topic);
+
+    if (!hasActiveSession) {
+      throw new Error('Session not found in active sessions. Please connect your wallet again.');
+    }
+
+    // Extract account from viasecurechain namespace
+    const accounts = session.namespaces.viasecurechain?.accounts || [];
+    const fullAccount = accounts[0]; // e.g., "viasecurechain:mainnet:0xbA447B1..."
+    const fromAccount = fullAccount.split(':')[2]; // Extract address
+    const chainId = fullAccount.split(':').slice(0, 2).join(':');
+
+    // Request cryptographic signature for step-up authentication
+    const params = [
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message)),
+      fromAccount
+    ];
+
+    const signature = await client.request({
+      topic: session.topic,
+      chainId: chainId,
+      request: {
+        method: 'personal_sign',
+        params: params
+      }
+    });
+
+    setLastSignature(signature as string);
+    return signature as string;
+
+  } catch (error) {
+    console.error('Message signing failed:', error);
+    throw error;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+Step 5: User interface for step-up authentication
+Now for the final step! The user sees a simple, intuitive interface for authorizing high-risk or sensitive actions:
+// TransactionDemo.tsx - Complete UI for step-up authentication
+const TransactionDemo: React.FC = () => {
+  const { signMessage, isLoading, lastSignature } = useTransaction();
+  const { isConnected } = useWalletConnect();
+  const [message, setMessage] = useState('Hello from ZTF Demo App!');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSignMessage = async () => {
+    if (!isConnected) {
+      setError('Please connect your wallet first');
+      return;
+    }
+
+    try {
+      setError(null);
+      await signMessage(message);
+    } catch (err) {
+      console.error('Message signing failed:', err);
+      setError(err instanceof Error ? err.message : 'Message signing failed');
+    }
+  };
+
+  if (!isConnected) {
+    return (
+      <div style={{
+        padding: '20px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        backgroundColor: '#f9f9f9',
+        marginTop: '20px'
+      }}>
+        <h3>🔒 Message Signing Demo</h3>
+        <p>Please connect your wallet to test message signing.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      padding: '20px',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      backgroundColor: '#f9f9f9',
+      marginTop: '20px'
+    }}>
+      <h3>✍️ Message Signing Demo</h3>
+      <p>Sign messages with your connected wallet (no transactions involved)</p>
+
+      <div style={{ marginBottom: '15px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          Message to Sign:
+        </label>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '8px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            minHeight: '60px',
+            resize: 'vertical'
+          }}
+          placeholder="Enter your message here..."
+        />
+      </div>
+
+      <div style={{ marginBottom: '15px' }}>
+        <button
+          onClick={handleSignMessage}
+          disabled={isLoading || !message}
+          style={{
+            backgroundColor: isLoading ? '#ccc' : '#2196F3',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            fontSize: '16px',
+            width: '200px'
+          }}
+        >
+          {isLoading ? 'Signing...' : 'Sign Message'}
+        </button>
+      </div>
+
+      {error && (
+        <div style={{
+          marginBottom: '15px',
+          padding: '10px',
+          backgroundColor: '#ffebee',
+          border: '1px solid #f44336',
+          borderRadius: '4px',
+          color: '#c62828'
+        }}>
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
+      {lastSignature && (
+        <div style={{
+          marginTop: '15px',
+          padding: '10px',
+          backgroundColor: '#e8f5e8',
+          border: '1px solid #4caf50',
+          borderRadius: '4px',
+          color: '#2e7d32'
+        }}>
+          <strong>✅ Message Signed!</strong>
+          <div style={{
+            marginTop: '8px',
+            wordBreak: 'break-all',
+            fontFamily: 'monospace',
+            fontSize: '12px',
+            backgroundColor: 'white',
+            padding: '8px',
+            borderRadius: '4px'
+          }}>
+            {lastSignature}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+Authentication resources
+NIST Cybersecurity Framework 2.0 explicitly recommends cryptographic authentication as the gold standard, meeting AAL3 requirements.
+OWASP Top 10 2024 lists "Broken Access Control" as the #1 web application security risk and “Identification and Authentication failure” as the #7— your ZTF implementation will give you the tools to mitigate it.
+Get started now: The complete checklist
+Download the complete codebase: GitHub Repository 
+Live documentation: Via Knowledge Hub Authentication Guide 
+Technical requirements: Node.js, React, WalletConnect SDK, Keycloak 
+Remember: Every day you delay implementation is a day your authentication system remains vulnerable to the attacks that ZTF eliminates completely.
+What are you waiting for?
+💬 Questions? Drop a comment below. I read and respond to every single one.
+About the Author: 
+Jesus Cardenes, VIA's Senior Vice President, Product Architecture, is responsible for the technical roadmap and architectural design of all VIA products and its Web3 platform. He is known for his expertise in connecting technologies and platforms to create seamless user experiences. An interesting fact about Jesus is that he loves to cycle during the weekends with his kids! 
+
+
+
+
+

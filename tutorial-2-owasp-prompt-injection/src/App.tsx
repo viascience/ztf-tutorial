@@ -18,6 +18,9 @@ const keycloak = new Keycloak({
   clientId: "localhost-app",
 });
 
+// Make keycloak instance available globally for API service
+(window as any).keycloak = keycloak;
+
 // Main app content component that uses the hooks
 const AppContent: React.FC = () => {
   const { isInitialized, walletConnectInfo, loadAppConfig } = useConfig();

@@ -52,7 +52,7 @@ export class LLMService {
         apiKey: config.apiKey,
       });
     }
-    // TODO: Add Anthropic support in future iterations
+    // Currently supports OpenAI GPT models - additional providers can be added here
   }
 
   /**
@@ -252,6 +252,7 @@ export function createLLMServiceFromEnv(): LLMService {
   };
 
   if (!config.apiKey) {
+    console.error('[LLM] Error: API key not provided. Please set OPENAI_API_KEY in your .env file');
     throw new Error('LLM API key not provided. Please set OPENAI_API_KEY in your .env file');
   }
 

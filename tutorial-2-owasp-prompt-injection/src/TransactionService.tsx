@@ -4,6 +4,7 @@ import { useWalletConnect } from './WalletConnectProvider';
 
 interface TransactionState {
   signMessage: (message: string) => Promise<string | null>;
+  signRequestBody: (requestBody: any) => Promise<string | null>;
   isLoading: boolean;
   lastSignature: string | null;
 }
@@ -108,9 +109,76 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({ childr
     }
   };
 
+  // Create deterministic JSON string for consistent hashing (matches backend implementation)
+  const createDeterministicJSON = (obj: any): string => {
+    // Remove signature field from the object for hashing
+    const { signature, ...objWithoutSignature } = obj;
+
+    // Sort keys recursively to ensure consistent ordering
+    function sortKeys(item: any): any {
+      if (Array.isArray(item)) {
+        return item.map(sortKeys);
+      } else if (item !== null && typeof item === 'object') {
+        return Object.keys(item)
+          .sort()
+          .reduce((sorted: any, key: string) => {
+            sorted[key] = sortKeys(item[key]);
+            return sorted;
+          }, {});
+      }
+      return item;
+    }
+
+    const sortedObj = sortKeys(objWithoutSignature);
+    return JSON.stringify(sortedObj);
+  };
+
+  // Create SHA256 hash using browser's SubtleCrypto API
+  const createSHA256Hash = async (data: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+  };
+
+  // Sign request body for sensitive endpoint validation
+  const signRequestBody = async (requestBody: any): Promise<string | null> => {
+    try {
+      console.log('[FRONTEND] Creating request body signature...');
+
+      // Create deterministic JSON representation
+      const deterministicJSON = createDeterministicJSON(requestBody);
+      console.log(`[FRONTEND] Deterministic JSON: ${deterministicJSON.substring(0, 100)}...`);
+
+      // Create SHA256 hash
+      const hash = await createSHA256Hash(deterministicJSON);
+      console.log(`[FRONTEND] Generated hash: ${hash}`);
+
+      // Create the message that matches backend expectation
+      const messageToSign = `Request hash: ${hash}`;
+      console.log(`[FRONTEND] Message to sign: ${messageToSign}`);
+
+      // Sign the hash message using existing wallet signing infrastructure
+      const signature = await signMessage(messageToSign);
+
+      if (signature) {
+        console.log(`[FRONTEND] ✅ Request body signed successfully`);
+        console.log(`[FRONTEND] Signature: ${signature.substring(0, 50)}...`);
+      }
+
+      return signature;
+
+    } catch (error) {
+      console.error('[FRONTEND] ❌ Request body signing failed:', error);
+      throw new Error(`Failed to sign request body: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   const value: TransactionState = {
     signMessage,
+    signRequestBody,
     isLoading,
     lastSignature
   };

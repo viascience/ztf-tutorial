@@ -501,31 +501,16 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
   // Check WalletConnect state after initialization (based on Angular checkState method)
   const checkWalletConnectState = async (signClient: SignClient) => {
     try {
-      console.log('🔍 DEBUG: Checking session data in storage...');
+      // Check for existing sessions in storage
       const sessionData = await storageService.getItem('wc@2:client:0.3//session');
-      console.log('🔍 DEBUG: Raw session data from storage:', sessionData);
 
       if (sessionData && typeof sessionData === 'object') {
-        console.log('🔍 DEBUG: Session topics in storage:', Object.keys(sessionData));
         Object.entries(sessionData).forEach(([topic, session]: [string, any]) => {
-          console.log(`🔍 DEBUG: Session ${topic}:`, {
-            topic: session?.topic,
-            expiry: session?.expiry,
-            acknowledged: session?.acknowledged,
-            hasNamespaces: !!session?.namespaces,
-            controller: session?.controller,
-            selfPublicKey: session?.selfPublicKey,
-            peerPublicKey: session?.peerPublicKey,
-            requiredNamespaces: !!session?.requiredNamespaces,
-            optionalNamespaces: !!session?.optionalNamespaces
-          });
-
           // Check if session is expired
           const isExpired = session?.expiry * 1000 < Date.now();
-          console.log(`🔍 DEBUG: Session ${topic} expired:`, isExpired);
-
-          // Log full session structure
-          console.log(`🔍 DEBUG: Full session ${topic}:`, session);
+          if (!isExpired) {
+            console.log(`Found valid session: ${topic}`);
+          }
         });
       }
 
@@ -533,9 +518,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
       const pairings = signClient.core.pairing.getPairings();
       console.log(`Found ${pairings.length} existing pairings`);
 
-      if (pairings.length > 0) {
-        console.log('🔍 DEBUG: Pairing topics:', pairings.map(p => p.topic));
-      }
+      // Process any existing pairings
 
       // Get existing sessions
       const sessions = signClient.session.getAll();

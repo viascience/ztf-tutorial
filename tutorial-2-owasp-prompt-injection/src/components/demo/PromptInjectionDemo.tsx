@@ -16,7 +16,7 @@ import agentAPIService from '../../services/AgentAPIService';
 import '../../styles/demo.css';
 
 const PromptInjectionDemo: React.FC = () => {
-  const { signMessage } = useTransaction();
+  const { signMessage, signRequestBody } = useTransaction();
   const { isConnected } = useWalletConnect();
 
   const [demoState, setDemoState] = useState<DemoState>({
@@ -194,26 +194,15 @@ const PromptInjectionDemo: React.FC = () => {
           console.log('🔐 Signature required for:', apiCall.endpoint);
 
           try {
-            const walletPrompt = result.response?.requiredApproval?.action ||
+            const actionDescription = result.response?.requiredApproval?.action ||
               `Approve ${apiCall.method} ${apiCall.endpoint}`;
 
-            console.log('💳 Prompting VIA wallet with:', walletPrompt);
-
-            // Get signature from VIA wallet
-            const signature = await signMessage(walletPrompt);
-
-            if (!signature) {
-              throw new Error('No signature received from wallet');
-            }
-
-            console.log('✅ User approved signature');
-
-            // Retry with signature
-            const signedResult = await agentAPIService.executeAPICallWithSignature(apiCall, signature);
+            // Request user signature for sensitive operation
+            const signedResult = await agentAPIService.executeAPICallWithSignature(apiCall, signMessage);
             executionResults[executionResults.length - 1] = signedResult;
 
           } catch (walletError) {
-            console.log('❌ User rejected signature or wallet error:', walletError);
+            console.log('User rejected signature:', walletError);
             result.userDecision = 'rejected';
             result.error = 'User rejected VIA wallet signature';
           }
@@ -223,7 +212,7 @@ const PromptInjectionDemo: React.FC = () => {
         setApiExecutionResults([...executionResults]);
 
       } catch (error) {
-        console.error(`❌ Failed to execute ${apiCall.endpoint}:`, error);
+        console.error(`API call failed: ${apiCall.endpoint}`, error);
         executionResults.push({
           endpoint: apiCall.endpoint,
           method: apiCall.method,
@@ -235,7 +224,6 @@ const PromptInjectionDemo: React.FC = () => {
     }
 
     setExecutingAPIs(false);
-    console.log('✅ All API calls executed. Results:', executionResults);
   }, [signMessage]);
 
   const handleStartCountdown = useCallback(() => {
@@ -254,8 +242,7 @@ const PromptInjectionDemo: React.FC = () => {
   }, []);
 
   const handleExecutionComplete = useCallback((results: { left: ExecutionResult; right: ExecutionResult }) => {
-    console.log('🔍 DEBUG: handleExecutionComplete received results:', results);
-    console.log('🔍 DEBUG: Right system userDecision:', results.right.userDecision);
+    // Store execution results for display
 
     setDemoState(prev => ({
       ...prev,
@@ -689,7 +676,7 @@ const PromptInjectionDemo: React.FC = () => {
                 <h3>🛡️ VIA Protected System</h3>
                 <div className={`result-status ${demoState.rightSystemResult.userDecision === 'rejected' ? 'protected' : 'compromised'}`}>
                   {(() => {
-                    console.log('🔍 DEBUG: Rendering results with userDecision:', demoState.rightSystemResult.userDecision);
+                    // Render execution results
                     return demoState.rightSystemResult.userDecision === 'rejected' ? (
                       <>
                         <p><strong>Status:</strong> ✅ SUCCESS - ATTACK PREVENTED</p>

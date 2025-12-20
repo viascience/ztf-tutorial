@@ -9,9 +9,12 @@
 import 'dotenv/config'; // Load environment variables
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { json } from 'body-parser';
 import { ALL_ENDPOINTS, getEndpointByPath } from './config/api-endpoints';
 import { createLLMServiceFromEnv, LLMService } from './services/LLMService';
+import { authenticateJWT, validateJWTConfig } from './middleware/jwtAuth';
+import { validateSignature } from './middleware/signatureAuth';
 
 // Types for API responses
 export interface ApiResponse<T = any> {
@@ -44,13 +47,29 @@ try {
   console.warn('🔧 Agent functionality will be disabled. Please check your .env configuration.');
 }
 
+// Validate JWT configuration
+if (!validateJWTConfig()) {
+  console.error('❌ JWT configuration validation failed');
+  console.error('🔧 Please check your Keycloak environment variables');
+  process.exit(1);
+}
+console.log('✅ JWT configuration validated successfully');
+
 // Middleware setup
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 
-app.use(json({ limit: '10mb' }));
+app.use(json({
+  limit: '1mb', // Reduced from 10mb for security
+  verify: (req, res, buf) => {
+    // Additional request validation can be added here if needed
+    if (buf.length === 0) {
+      throw new Error('Empty request body');
+    }
+  }
+}));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -59,137 +78,35 @@ app.use((req, res, next) => {
   next();
 });
 
-// Basic bearer token authentication middleware
-const authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({
+// Rate limiting for sensitive endpoints
+const sensitiveEndpointLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: {
+    success: false,
+    error: 'RATE_LIMIT_EXCEEDED',
+    message: 'Too many sensitive operations from this IP. Please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next) => {
+    console.log(`[RATE_LIMIT] IP ${req.ip} exceeded rate limit for sensitive endpoints`);
+    res.status(429).json({
       success: false,
-      error: 'ACCESS_TOKEN_REQUIRED',
-      message: 'Bearer token required for API access'
+      error: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many sensitive operations from this IP. Please try again later.'
     });
   }
+});
 
-  // TODO: Production implementations should validate JWT tokens properly
-  // For demo purposes, we just check that a token is present
-  if (token.length < 10) {
-    return res.status(401).json({
-      success: false,
-      error: 'INVALID_TOKEN',
-      message: 'Token appears to be invalid'
-    });
-  }
+// Apply JWT authentication to all API routes
+app.use('/api', authenticateJWT);
 
-  // Store token info for downstream middleware
-  (req as any).authToken = token;
-  (req as any).userId = 'demo-user@company.com'; // Mock user ID
+// Apply rate limiting to sensitive endpoints (before signature validation)
+app.use('/api/sensitive', sensitiveEndpointLimiter);
 
-  next();
-};
-
-// Demo signature validation middleware for sensitive endpoints
-const validateSensitiveEndpoint = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const { signature, ...actionParams } = req.body;
-
-  console.log(`[MIDDLEWARE] Processing request: ${req.method} ${req.path}`);
-  console.log(`[MIDDLEWARE] Original URL: ${req.originalUrl}`);
-  console.log(`[MIDDLEWARE] Request body:`, req.body);
-
-  // Since this middleware is only mounted on /api/sensitive routes,
-  // any request hitting it is by definition a sensitive endpoint
-  console.log(`[MIDDLEWARE] ⚠️ SENSITIVE ENDPOINT DETECTED: ${req.method} ${req.originalUrl}`);
-  console.log(`[MIDDLEWARE] Signature provided: ${signature ? 'YES' : 'NO'}`);
-  console.log(`[MIDDLEWARE] Full signature value:`, signature);
-
-  const endpoint = getEndpointByPath(req.originalUrl);
-  const riskLevel = endpoint?.riskLevel || 'HIGH';
-
-  console.log(`[MIDDLEWARE] Endpoint found:`, endpoint ? 'YES' : 'NO');
-  console.log(`[MIDDLEWARE] Risk level:`, riskLevel);
-
-  // Check if signature is provided
-  if (!signature || signature.trim() === '') {
-    console.log(`[MIDDLEWARE] 🚫 NO SIGNATURE PROVIDED - BLOCKING REQUEST`);
-    const response: SignatureRequiredResponse = {
-      success: false,
-      error: 'SIGNATURE_REQUIRED',
-      message: 'This sensitive operation requires VIA wallet signature',
-      requiredApproval: {
-        action: generateActionDescription(req.originalUrl, actionParams),
-        riskLevel: endpoint?.riskLevel || 'HIGH',
-        endpoint: req.originalUrl
-      }
-    };
-    console.log(`[MIDDLEWARE] Sending 403 response:`, response);
-    return res.status(403).json(response);
-  }
-
-  // TODO: Production implementations must verify the signature properly:
-  // - Extract user's public key from JWT token
-  // - Generate expected message for this specific action
-  // - Cryptographically verify signature matches expected message and user
-  // - Check for replay attacks using signature/timestamp tracking
-  // - Validate signature format and encoding
-
-  // Demo validation: Just check signature exists and looks reasonable
-  if (signature.length < 10) {
-    console.log(`[MIDDLEWARE] 🚫 INVALID SIGNATURE FORMAT - BLOCKING REQUEST`);
-    console.log(`[MIDDLEWARE] Signature length: ${signature.length}`);
-    return res.status(403).json({
-      success: false,
-      error: 'INVALID_SIGNATURE_FORMAT',
-      message: 'Signature appears to be invalid or corrupted'
-    });
-  }
-
-  console.log(`[MIDDLEWARE] ✅ SIGNATURE VALIDATED - ALLOWING REQUEST`);
-  console.log(`[MIDDLEWARE] Signature length: ${signature.length}`);
-
-  // Log sensitive action for demo analytics
-  console.log(`[SENSITIVE ACTION] ${req.originalUrl} - User: ${(req as any).userId} - Action: ${generateActionDescription(req.originalUrl, actionParams)}`);
-
-  // Store verified action info
-  (req as any).verifiedAction = {
-    signature,
-    actionDescription: generateActionDescription(req.originalUrl, actionParams),
-    timestamp: Date.now(),
-    demoMode: true
-  };
-
-  console.log(`[MIDDLEWARE] Proceeding to endpoint handler...`);
-  next();
-};
-
-// Utility function to generate human-readable action descriptions
-function generateActionDescription(endpoint: string, params: any): string {
-  switch (endpoint) {
-    case '/api/sensitive/bulk-export':
-      return `Export data: "${params.query}" to destination "${params.destination}"`;
-
-    case '/api/sensitive/external-communication':
-      return `Send external message to "${params.recipient}": "${params.subject}"`;
-
-    case '/api/sensitive/modify-permissions':
-      return `${params.action === 'grant' ? 'Grant' : 'Revoke'} permissions ${JSON.stringify(params.permissions)} for user "${params.userId}"`;
-
-    case '/api/sensitive/financial-transaction':
-      return `Process ${params.type} of $${params.amount} to "${params.recipient}"`;
-
-    case '/api/sensitive/deploy-code':
-      return `Deploy code from "${params.repository}:${params.branch}" to "${params.environment}"`;
-
-    default:
-      return `Perform sensitive action: ${endpoint}`;
-  }
-}
-
-// Apply authentication to all API routes
-app.use('/api', authenticateToken);
-
-// Apply sensitive endpoint validation
-app.use('/api/sensitive', validateSensitiveEndpoint);
+// Apply cryptographic signature validation to sensitive endpoints
+app.use('/api/sensitive', validateSignature);
 
 // Health check endpoint (no auth required)
 app.get('/health', (req, res) => {
@@ -560,7 +477,8 @@ if (require.main === module) {
     console.log(`📊 API Endpoints loaded: ${ALL_ENDPOINTS.length} total`);
     console.log(`   - Regular endpoints: ${ALL_ENDPOINTS.filter(e => e.category === 'regular').length}`);
     console.log(`   - Sensitive endpoints: ${ALL_ENDPOINTS.filter(e => e.category === 'sensitive').length}`);
-    console.log(`🔒 Demo signature validation enabled (Production TODOs in place)`);
+    console.log(`🔒 Production JWT verification with Keycloak JWKS enabled`);
+    console.log(`🔐 Cryptographic signature validation with ECDSA verification enabled`);
   });
 }
 
