@@ -20,6 +20,7 @@ This application demonstrates:
 - **Docker**: Required for running the containerized application
 - [**ZTF documentation**](https://www.solvewithvia.com/via-ztf/): To learn more about Zero Trust Fabric. 
 - **Basic Knowledge**: Understanding of React, Web3, and WalletConnect concepts
+- VIA Knowledge Hub Post: [**"Five steps to secure your app against rogue AI agents"**](https://www.viaknowledgehub.com/p/five-steps-to-secure-your-app-against)
 
 ## How It Works
 
@@ -52,6 +53,16 @@ cd tutorial-2-step-up-auth
 # Build and run with Docker
 docker build -t ztf-tutorial-2 .
 docker run -p 80:80 ztf-tutorial-2
+```
+
+Or by running the justfile:
+
+```
+# Start 
+just up-detached
+
+#Stop
+just down
 ```
 
 The application will be available at `http://localhost`
@@ -409,6 +420,7 @@ For technical issues, questions, or bug reports, please create an issue in the [
 - [Docker Documentation](https://docs.docker.com/)
 - [Ethereum Development](https://ethereum.org/developers/)
 - [ZTF Documentation](https://www.solvewithvia.com/via-ztf/)
+- [VIA Knowledge Hub Post "Five steps to secure your app against rogue AI agents"](https://www.viaknowledgehub.com/p/five-steps-to-secure-your-app-against)
 
 
 ### Next Steps
