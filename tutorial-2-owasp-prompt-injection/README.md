@@ -73,9 +73,6 @@ cd tutorial-2-owasp-promp-injection
 cp .env.example .env
 # Then edit .env and replace "your-openai-api-key-here" with your actual API key
 
-# Alternatively, set the API key directly in your environment
-export OPENAI_API_KEY="your-api-key-here"
-
 # Start the full system
 docker-compose up --build
 ```
