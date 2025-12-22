@@ -1,0 +1,13 @@
+# justfile
+
+# Build and start the application
+up:
+    docker compose up --build
+
+# Run in background (detached mode)
+up-detached:
+    docker compose up -d --build
+
+# Stop the application
+down:
+    docker compose down

@@ -1,0 +1,54 @@
+# Backend Dockerfile for OWASP Prompt Injection Demo
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json tsconfig.json ./
+
+# Install dependencies (including dev dependencies for TypeScript compilation)
+RUN npm install
+
+# Copy backend source code
+COPY src/backend ./src/backend
+
+# Create dist directory and compile TypeScript
+RUN mkdir -p dist
+RUN npx tsc src/backend/**/*.ts --outDir dist --target es2020 --module commonjs --esModuleInterop --allowSyntheticDefaultImports --resolveJsonModule --skipLibCheck || true
+
+# Install ts-node globally and create proper TypeScript config
+RUN npm install -g ts-node
+
+# Create tsconfig.json for ts-node
+RUN echo '{ \
+  "compilerOptions": { \
+    "target": "es2020", \
+    "module": "commonjs", \
+    "lib": ["es2020"], \
+    "outDir": "./dist", \
+    "rootDir": "./src", \
+    "strict": false, \
+    "esModuleInterop": true, \
+    "allowSyntheticDefaultImports": true, \
+    "skipLibCheck": true, \
+    "forceConsistentCasingInFileNames": true, \
+    "resolveJsonModule": true \
+  }, \
+  "ts-node": { \
+    "esm": false, \
+    "compilerOptions": { \
+      "module": "commonjs" \
+    } \
+  } \
+}' > /app/tsconfig.json
+
+# Expose backend port
+EXPOSE 3001
+
+# Health check - install curl first
+RUN apk add --no-cache curl
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start the backend server with proper ts-node configuration
+CMD ["npx", "ts-node", "--transpile-only", "src/backend/server.ts"]

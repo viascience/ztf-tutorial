@@ -1,0 +1,47 @@
+{
+  "name": "ztf-tutorial-2",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@walletconnect/keyvaluestorage": "^1.1.1",
+    "@walletconnect/sign-client": "2.13.3",
+    "@walletconnect/types": "2.13.3",
+    "@walletconnect/utils": "2.13.3",
+    "axios": "^1.7.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "framer-motion": "^12.23.26",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-client": "^2.1.0",
+    "keycloak-js": "^25.0.6",
+    "openai": "^4.38.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^18.15.0",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "concurrently": "^8.2.0",
+    "http-proxy-middleware": "^2.0.6",
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "backend": "nodemon --exec ts-node src/backend/server.ts",
+    "dev": "concurrently \"npm run backend\" \"npm start\"",
+    "build:backend": "tsc src/backend/server.ts --outDir dist --target es2020 --module commonjs"
+  }
+}

@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ztf-backend
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - BACKEND_PORT=3001
+      - FRONTEND_URL=http://localhost
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=gpt-4o-mini
+      - LLM_PROVIDER=openai
+    networks:
+      - ztf-network
+    depends_on:
+      - frontend
+
+  # Frontend React App
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ztf-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_BACKEND_URL=http://localhost:3001
+    networks:
+      - ztf-network
+
+networks:
+  ztf-network:
+    driver: bridge
+
