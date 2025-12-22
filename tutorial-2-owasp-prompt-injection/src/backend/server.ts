@@ -55,6 +55,15 @@ if (!validateJWTConfig()) {
 }
 console.log('✅ JWT configuration validated successfully');
 
+
+// Utility function for input sanitization
+const sanitizeInput = (input: string, maxLength: number = 10240): string => {
+  return input
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous HTML characters
+    .trim()
+    .substring(0, maxLength); // Limit input length
+};
+
 // Middleware setup
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -133,26 +142,33 @@ app.post('/api/agent/process-request', async (req, res) => {
   }
 
   try {
+    // Sanitize request body
     const { userInput, injectionScenario } = req.body;
 
+    // Sanitize userInput
     if (!userInput || typeof userInput !== 'string') {
       return res.status(400).json({
-        success: false,
-        error: 'INVALID_INPUT',
-        message: 'userInput is required and must be a string'
+      success: false,
+      error: 'INVALID_INPUT',
+      message: 'userInput is required and must be a string'
       });
     }
 
-    console.log(`[AGENT] Processing request from user: ${(req as any).userId}`);
-    console.log(`[AGENT] User input: ${userInput.substring(0, 100)}...`);
+    // Basic input sanitization
+    const sanitizedUserInput = sanitizeInput(userInput);
 
-    if (injectionScenario) {
-      console.log(`[AGENT] 🚨 Injection scenario detected: ${injectionScenario.substring(0, 50)}...`);
+    // Sanitize injectionScenario if present
+    let sanitizedInjectionScenario = sanitizeInput(injectionScenario);
+
+    console.log(`[AGENT] Processing request from user: ${(req as any).userId}`);
+    console.log(`[AGENT] User input: ${sanitizedUserInput.substring(0, 100)}...`);
+
+    if (sanitizedInjectionScenario) {
+      console.log(`[AGENT] 🚨 Injection scenario detected: ${sanitizedInjectionScenario.substring(0, 50)}...`);
     }
 
     // Process through LLM
-    const result = await llmService.processUserRequest(userInput, injectionScenario);
-
+    const result = await llmService.processUserRequest(sanitizedUserInput, sanitizedInjectionScenario);
     // Log the results for demo analytics
     console.log(`[AGENT] Processing complete - Success: ${result.success}`);
     console.log(`[AGENT] Generated ${result.apiCalls.length} API calls`);
@@ -449,7 +465,10 @@ app.post('/api/sensitive/deploy-code', (req, res) => {
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(`[ERROR] ${req.method} ${req.path}:`, err);
+  // Sanitize request method and path for logging
+  const sanitizedMethod = req.method?.replace(/[^\w-]/g, '') || 'UNKNOWN';
+  const sanitizedPath = req.path?.replace(/[<>'"&]/g, '') || 'UNKNOWN';
+  console.error(`[ERROR] ${sanitizedMethod} ${sanitizedPath}:`, err);
 
   res.status(500).json({
     success: false,

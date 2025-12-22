@@ -38,6 +38,14 @@ export interface LLMProcessingResult {
   };
 }
 
+// Utility function for input sanitization
+const sanitizeInput = (input: string, maxLength: number = 10240): string => {
+  return input
+    .replace(/[<>'"&]/g, '') // Remove potentially dangerous HTML characters
+    .trim()
+    .substring(0, maxLength); // Limit input length
+};
+
 export class LLMService {
   private openai: OpenAI | null = null;
   private config: LLMConfig;
@@ -63,12 +71,15 @@ export class LLMService {
     injectionScenario?: string
   ): Promise<LLMProcessingResult> {
     try {
-      console.log(`[LLM] Processing user request: ${userInput.substring(0, 100)}...`);
+      // Sanitize user input before processing
+      const sanitizedInput = sanitizeInput(userInput);
+      const sanitizedInjectionScenario = sanitizeInput(injectionScenario ?? '');
+      console.log(`[LLM] Processing user request: ${sanitizedInput.substring(0, 100)}...`);
 
       // Combine user input with optional injection
       const fullPrompt = injectionScenario
-        ? `${userInput}\n\n${injectionScenario}`
-        : userInput;
+        ? `${sanitizedInput}\n\n${sanitizedInjectionScenario}`
+        : sanitizedInput;
 
       // Call LLM API
       const response = await this.callLLM(fullPrompt);
