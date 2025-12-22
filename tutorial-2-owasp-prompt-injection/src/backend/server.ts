@@ -442,24 +442,28 @@ app.post('/api/sensitive/financial-transaction', (req, res) => {
 // POST /api/sensitive/deploy-code
 app.post('/api/sensitive/deploy-code', (req, res) => {
   const { environment, repository, branch } = req.body;
+  const sanitizedEnvironment = sanitizeInput(environment, 100);
+  const sanitizedRepository = sanitizeInput(repository, 1000);
+  const sanitizedBranch = sanitizeInput(branch, 100);  
+
 
   const mockDeployResult = {
     deploymentId: 'DEP-' + Date.now(),
     status: 'initiated',
-    environment,
-    repository,
-    branch,
+    sanitizedEnvironment,
+    sanitizedRepository,
+    sanitizedBranch,
     estimatedDuration: '15 minutes',
     buildNumber: Math.floor(Math.random() * 1000) + 1000,
     startedAt: new Date().toISOString()
   };
 
-  console.log(`[SENSITIVE] Code deployment: ${repository}:${branch} to ${environment}`);
+  console.log(`[SENSITIVE] Code deployment: ${sanitizedRepository}:${sanitizedBranch} to ${sanitizedEnvironment}`);
 
   res.json({
     success: true,
     data: mockDeployResult,
-    message: `Deployment to ${environment} initiated`
+    message: `Deployment to ${sanitizedEnvironment} initiated`
   });
 });
 
