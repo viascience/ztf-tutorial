@@ -42,6 +42,30 @@ Learn how to integrate ZTF's passwordless authentication system with Keycloak in
 
 ---
 
+### OWASP Prompt Injection Defense 🛡️
+
+**Status:** ✅ **Available Now**
+
+Learn to defend against AI prompt injection attacks using enterprise-grade cryptographic security. This comprehensive tutorial demonstrates both attack vectors and advanced defense mechanisms with real ECDSA signature verification.
+
+**What you'll learn:**
+- Understanding prompt injection attack patterns and techniques
+- Implementing cryptographic signature-based step-up authentication
+- Building secure AI agent systems with VIA wallet integration
+- Advanced security architectures with JWT + ECDSA verification
+- Comprehensive security audit logging and monitoring
+
+**Technologies:** React, OpenAI API, Express.js, ECDSA Signatures, JWT/JWKS, Keycloak, Docker
+
+**🎯 Perfect for:** Security professionals, AI developers, and teams building production AI applications requiring enterprise-grade security
+
+**🔒 Features:**
+- 🎬 **Hardcoded Attack Scenarios** - Pre-scripted demonstrations of classic prompt injection techniques
+- 🤖 **Live Agent Sandbox** - Real OpenAI-powered agent vulnerable to actual prompt injection attempts
+- 🔐 **Cryptographic Defense** - Full ECDSA signature validation
+
+---
+
 ### Coming Soon! Web3 & WalletConnect Integration 🔥
 
 **Status:** 🚧 **Coming Soon**
