@@ -97,7 +97,7 @@ This tutorial shows how to protect sensitive operations even when AI agents can 
 
 **Status:** ✅ **Available Now**
 
-Learn to defend against AI prompt injection attacks using enterprise-grade cryptographic security. This comprehensive tutorial demonstrates both attack vectors and advanced defense mechanisms with real ECDSA signature verification.
+Learn how to defend against AI prompt injection attacks using enterprise-grade cryptographic security. This comprehensive tutorial demonstrates common attack vectors and advanced defense mechanisms, including real ECDSA signature verification. We use a Human-on-the-Loop (HOTL) oversight model and API-level policy enforcement to protect against malicious attacks.
 
 **What you'll learn:**
 - Understanding prompt injection attack patterns and techniques
