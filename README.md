@@ -93,6 +93,30 @@ This tutorial shows how to protect sensitive operations even when AI agents can 
 
 ---
 
+### OWASP Prompt Injection Defense 🛡️
+
+**Status:** ✅ **Available Now**
+
+Learn to defend against AI prompt injection attacks using enterprise-grade cryptographic security. This comprehensive tutorial demonstrates both attack vectors and advanced defense mechanisms with real ECDSA signature verification.
+
+**What you'll learn:**
+- Understanding prompt injection attack patterns and techniques
+- Implementing cryptographic signature-based step-up authentication
+- Building secure AI agent systems with VIA wallet integration
+- Advanced security architectures with JWT + ECDSA verification
+- Comprehensive security audit logging and monitoring
+
+**Technologies:** React, OpenAI API, Express.js, ECDSA Signatures, JWT/JWKS, Keycloak, Docker
+
+**🎯 Perfect for:** Security professionals, AI developers, and teams building production AI applications requiring enterprise-grade security
+
+**🔒 Features:**
+- 🎬 **Hardcoded Attack Scenarios** - Pre-scripted demonstrations of classic prompt injection techniques
+- 🤖 **Live Agent Sandbox** - Real OpenAI-powered agent vulnerable to actual prompt injection attempts
+- 🔐 **Cryptographic Defense** - Full ECDSA signature validation
+
+---
+
 ### Coming Soon! Web3 & WalletConnect Integration 🔥
 
 **Status:** 🚧 **Coming Soon**
@@ -121,7 +145,8 @@ This tutorial will showcase ZTF's ability to bridge traditional enterprise authe
 - Node.js (version 18 or higher)
 - Docker and Docker Compose
 - Basic understanding of React and modern JavaScript
-- For Step Up Authentication Tutorial : Basic understanding of digital signatures and authentication flows
+- For Step Up Authentication Tutorial: Basic understanding of digital signatures and authentication flows
+- For OWASP Tutorial: OpenAI API key with paid account (required for live agent mode)
 - For Web3 Tutorial: Familiarity with Web3 concepts and blockchain development
 
 ### Quick Start
@@ -149,10 +174,11 @@ Each tutorial includes:
 ## 🎯 Learning Path Recommendation
 
 1. **Explore the Demo** - See ZTF in action with real-world scenarios
-2. **Start with Tutorial 1** - Master the fundamentals of ZTF authentication
-3. **Continue with Tutorial 2** - Learn step-up authentication with wallet signatures
-4. **Read the Documentation** - Dive deep into ZTF's architecture and capabilities
-5. **Prepare for Tutorial 3** - Get ready for advanced Web3 integrations (coming soon!)
+2. **Start with Authentication Fundamentals** - Master the basics with passwordless authentication tutorials
+3. **Learn Step-Up Authentication** - Add enhanced security with wallet signature verification
+4. **Explore AI Security** - Understand prompt injection defense with the OWASP tutorial
+5. **Read the Documentation** - Dive deep into ZTF's architecture and capabilities
+6. **Prepare for Web3** - Get ready for advanced blockchain integrations (coming soon!)
 
 ## 🤝 Contributing
 
