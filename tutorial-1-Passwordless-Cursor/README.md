@@ -50,7 +50,7 @@ Follow these steps to get the application running locally.
 ### 2. Clone and Install
 
 ```bash
-cd /path/to/tutorial2-Passwordless-NextJS
+cd /path/to/tutorial-1-Passwordless-Cursor
 npm install
 ```
 
@@ -115,15 +115,15 @@ npx supabase start
 ```env
 # Copy these from the supabase start output:
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321  # API URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-secret-key-here
 ```
 
 **Apply your database schema:**
 
 ```bash
 # Apply any pending migrations
-npx supabase db push
+npx supabase migration up
 ```
 
 **Supabase Local Services:**
